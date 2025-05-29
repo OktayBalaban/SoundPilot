@@ -1,3 +1,7 @@
+# 🎶 SoundPilot – AI Stem Mixer from YouTube
+
+SoundPilot lets you extract and remix vocals, drums, bass, or other stems from songs using just a YouTube link or song name.
+
 ## Setup
 
 ### 1. Clone the repository
