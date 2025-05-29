@@ -1,4 +1,4 @@
-## ⚙️ Setup
+## Setup
 
 ### 1. Clone the repository
 
@@ -11,14 +11,14 @@ cd soundpilot
 
 ### 2. Create and activate a virtual environment
 
-#### 🪟 Windows (CMD / PowerShell)
+#### Windows (CMD / PowerShell)
 
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
-#### 🍎 macOS / 🐧 Linux
+#### macOS / Linux
 
 ```bash
 python3 -m venv venv
