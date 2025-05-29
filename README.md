@@ -33,4 +33,11 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-You're ready to launch the app!
+### 4. Run the app
+
+```bash
+python app.py
+```
+
+The app will run on http://localhost:7860/. Just copy and paste the address to your browser. That's it!
+
