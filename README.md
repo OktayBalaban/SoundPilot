@@ -25,8 +25,6 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-> ✅ Tip: If `python3` or `python` gives an error, make sure Python 3.8+ is installed. You can check with `python --version`.
-
 ---
 
 ### 3. Install dependencies
