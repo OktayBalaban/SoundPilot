@@ -2,7 +2,7 @@ import yt_dlp
 import os
 import shutil
 
-def download_audio(youtube_url, output_folder="temp"):
+def download_audio(youtube_url, output_folder="temp", keep_original_name=False):
     os.makedirs(output_folder, exist_ok=True)
     title = None
 
@@ -31,7 +31,10 @@ def download_audio(youtube_url, output_folder="temp"):
         raise RuntimeError("Başlık alınamadı.")
     
     original_path = os.path.join(output_folder, f"{title}.mp3")
-    temp_path = os.path.join(output_folder, "temp_song.mp3")
-    shutil.move(original_path, temp_path)
+    if keep_original_name:
+        return original_path, title
+    else:
+        temp_path = os.path.join(output_folder, "temp_song.mp3")
+        shutil.move(original_path, temp_path)
+        return temp_path, title
 
-    return temp_path, title

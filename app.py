@@ -18,7 +18,18 @@ def process_song(user_input, selected_stems):
         else:
             youtube_url = search_youtube_link(user_input)
 
-        mp3_path, song_title = download_audio(youtube_url, output_folder="temp")
+        all_stems = {"vocals", "drums", "bass", "guitar (and others)"}
+        keep_original = set(selected_stems) == all_stems
+
+        mp3_path, song_title = download_audio(
+            youtube_url,
+            output_folder="temp",
+            keep_original_name=keep_original
+        )
+
+        if keep_original:
+            return os.path.abspath(mp3_path), os.path.abspath(mp3_path)
+
         extract_stems(mp3_path, output_folder="temp/stems")
         stem_dir = os.path.join("temp", "stems", "htdemucs", "temp_song")
         output_path = os.path.join("temp", f"{song_title}_mix.mp3")
@@ -37,7 +48,7 @@ demo = gr.Interface(
             placeholder="e.g. 'Adele Hello' or https://www.youtube.com/watch?v=..."
         ),
         gr.CheckboxGroup(
-            choices=["vocals", "drums", "bass", "other"],
+            choices=["vocals", "drums", "bass", "guitar (and others)"],
             label="🎚️ Select stems to include in the mix",
             info="Choose which isolated stems to mix together."
         )

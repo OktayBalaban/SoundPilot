@@ -5,3 +5,4 @@ gradio
 pydub
 dotenv
 duckduckgo_search>=0.9.4
+google-generativeai
