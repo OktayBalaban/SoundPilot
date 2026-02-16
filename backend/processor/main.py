@@ -17,8 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+OUTPUT_DIR = os.path.join(CURRENT_DIR, "outputs")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
@@ -36,5 +36,5 @@ app.include_router(router, prefix="/api/v1/processor")
 if __name__ == "__main__":
     print(f"--- Project-AISound Backend ---")
     print(f"URL: http://127.0.0.1:8000")
-    print(f"Static Files: {OUTPUT_DIR} -> /static")
+    print(f"Static Files (Serving from): {OUTPUT_DIR} -> accessible via /static")
     uvicorn.run(app, host="127.0.0.1", port=8000)

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { apiClient } from '$lib/api/client';
-    import TrackRow from '$lib/components/TrackRow.svelte';
+    import AudioMixer from '$lib/components/AudioMixer.svelte';
     import type { Track } from '$lib/types';
 
     // Svelte 5 Runes: State tanımları
@@ -14,7 +14,7 @@
 
         const file = input.files[0];
         
-        // Reset state
+        // State sıfırlama
         isProcessing = true;
         error = null;
         tracks = [];
@@ -24,13 +24,10 @@
             
             // Backend'den gelen yolları Track modeline çevir
             tracks = response.processed_files.map((path, index) => {
-                // Dosya adını bul (vocals.wav -> vocals)
                 let name = path.split(/[/\\]/).pop()?.replace('.wav', '') || `Track ${index}`;
-                // İlk harfi büyüt
                 name = name.charAt(0).toUpperCase() + name.slice(1);
 
                 return {
-                    id: crypto.randomUUID(),
                     name: name,
                     url: apiClient.getAudioUrl(path),
                     isMuted: false,
@@ -40,71 +37,69 @@
             
         } catch (err) {
             console.error(err);
-            error = err instanceof Error ? err.message : 'Unknown error';
+            error = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu';
         } finally {
             isProcessing = false;
         }
     }
 </script>
 
-<div class="min-h-screen bg-gray-900 text-gray-100 font-sans p-6">
-    <header class="max-w-4xl mx-auto mb-10 flex justify-between items-center border-b border-gray-800 pb-6">
+<div class="min-h-screen bg-gray-950 text-gray-100 font-sans p-6">
+    <header class="max-w-5xl mx-auto mb-10 flex justify-between items-center border-b border-gray-800 pb-8">
         <div>
-            <h1 class="text-3xl font-bold tracking-tight text-white">
-                AISound <span class="text-purple-500">Studio</span>
+            <h1 class="text-4xl font-black tracking-tighter text-white">
+                AISound <span class="text-blue-500">Studio</span>
             </h1>
-            <p class="text-gray-500 text-sm mt-1">Clean Architecture Demucs Implementation</p>
+            <p class="text-gray-500 text-sm mt-1 uppercase tracking-widest font-medium">Clean Architecture Demucs Mixer</p>
         </div>
         
         <label class="relative group cursor-pointer">
-            <div class="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg blur opacity-60 group-hover:opacity-100 transition duration-200"></div>
-            <div class="relative flex items-center bg-gray-900 rounded-lg px-6 py-3 leading-none border border-gray-800">
-                <span class="text-gray-100 font-medium group-hover:text-white transition duration-200">
-                    {isProcessing ? 'Processing...' : 'Upload Song'}
+            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl blur opacity-40 group-hover:opacity-100 transition duration-500"></div>
+            <div class="relative flex items-center bg-gray-900 rounded-xl px-8 py-4 leading-none border border-gray-800 transition-all active:scale-95">
+                <span class="text-gray-100 font-bold group-hover:text-white transition duration-200">
+                    {isProcessing ? 'İŞLENİYOR...' : 'ŞARKI YÜKLE'}
                 </span>
             </div>
             <input type="file" accept="audio/*" class="hidden" onchange={handleUpload} disabled={isProcessing} />
         </label>
     </header>
 
-    <main class="max-w-4xl mx-auto">
+    <main class="max-w-5xl mx-auto">
         {#if error}
-            <div class="bg-red-900/50 border border-red-500/50 text-red-200 p-4 rounded-lg mb-6 flex items-center gap-3">
-                <span class="text-xl">⚠️</span>
-                <p>{error}</p>
+            <div class="bg-red-500/10 border border-red-500/50 text-red-400 p-4 rounded-xl mb-8 flex items-center gap-4">
+                <span class="text-2xl">⚠</span>
+                <p class="font-medium">{error}</p>
             </div>
         {/if}
 
         {#if isProcessing}
-            <div class="flex flex-col items-center justify-center py-24 animate-pulse">
-                <div class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p class="text-gray-400 font-medium">AI is separating stems... This may take a while.</p>
+            <div class="flex flex-col items-center justify-center py-32 animate-pulse text-center">
+                <div class="w-20 h-20 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+                <h2 class="text-xl font-bold text-white mb-2">Yapay Zeka Sesleri Ayrıştırıyor</h2>
+                <p class="text-gray-500">Bu işlem şarkı uzunluğuna göre 1-2 dakika sürebilir.</p>
             </div>
         
         {:else if tracks.length > 0}
-            <div class="grid gap-2 fade-in">
-                {#each tracks as track (track.id)}
-                    <TrackRow {track} />
-                {/each}
+            <div class="fade-in">
+                <AudioMixer bind:tracks={tracks} />
             </div>
             
         {:else}
-            <div class="text-center py-24 border-2 border-dashed border-gray-800 rounded-xl text-gray-600 bg-gray-900/50">
-                <div class="text-4xl mb-4 opacity-50">🎵</div>
-                <p class="text-lg font-medium">No tracks loaded</p>
-                <p class="text-sm">Upload a song to start splitting vocals, drums, and bass.</p>
+            <div class="text-center py-32 border-2 border-dashed border-gray-800 rounded-3xl text-gray-700 bg-gray-900/20">
+                <div class="text-6xl mb-6 grayscale opacity-30">🎹</div>
+                <p class="text-xl font-bold text-gray-400">Henüz bir proje yüklenmedi</p>
+                <p class="text-gray-600 mt-2">Stem'leri (vokal, davul, bas) ayırmak için bir ses dosyası yükleyin.</p>
             </div>
         {/if}
     </main>
 </div>
 
 <style>
-    /* Basit bir animasyon */
     .fade-in {
-        animation: fadeIn 0.5s ease-in;
+        animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
 </style>
