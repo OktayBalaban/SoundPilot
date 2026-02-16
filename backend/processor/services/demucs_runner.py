@@ -7,22 +7,22 @@ from services.base_runner import AudioRunner
 from api.config import settings
 
 class DemucsRunner(AudioRunner):
+    def __init__(self, model_name: str, default_stems: str):
+        self.model_name = model_name
+        self.default_stems = default_stems
+
     def run(self, file_path: str, stems: List[str] = None) -> Dict[str, bytes]:
-        target_stems = stems if stems else [settings.demucs_stems]
+        target_stems = stems if stems else [self.default_stems]
         output_dir = tempfile.mkdtemp()
         
         try:
-            # 1. Motoru (Demucs CLI) çalıştır
             self._execute_demucs(file_path, output_dir, target_stems)
             
-            # 2. Üretilen dosyaların konumunu belirle
             model_path = self._get_model_output_path(output_dir, file_path)
             
-            # 3. Dosyaları toplayıp byte sözlüğü olarak dön
             return self._collect_stems(model_path, target_stems)
             
         finally:
-            # İşlem başarılı veya başarısız olsa da diski temizle
             self._cleanup(output_dir)
 
     def _execute_demucs(self, file_path: str, output_dir: str, stems: List[str]):
@@ -30,13 +30,11 @@ class DemucsRunner(AudioRunner):
         if len(stems) == 1:
             command.extend(["--two-stems", stems[0]])
         
-        # subprocess'i daha şeffaf hale getirelim
         result = subprocess.run(command, capture_output=True, text=True)
         
         if result.returncode != 0:
-            # ÖNEMLİ: Hata mesajını daha detaylı oluştur
             full_error = f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}"
-            print(f"--- DEMUCS FAILED ---\n{full_error}") # Sunucu terminaline basar
+            print(f"--- DEMUCS FAILED ---\n{full_error}")
             raise RuntimeError(f"Demucs CLI Error: {full_error}")
 
     def _get_model_output_path(self, output_dir: str, file_path: str) -> str:

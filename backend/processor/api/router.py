@@ -8,7 +8,6 @@ from services.processor_service import ProcessorService
 
 router = APIRouter()
 
-# api/router.py
 @router.post("/process")
 async def process_audio(
     file: UploadFile = File(...),
@@ -17,12 +16,15 @@ async def process_audio(
 ):
     contents = await file.read()
     
-    settings = selection.model_dump() if hasattr(selection, 'model_dump') else selection.dict()
+    selected_dict = selection.model_dump() if hasattr(selection, 'model_dump') else selection.dict()
+    stems_to_process = [stem for stem, enabled in selected_dict.items() if enabled]
     
-    processed_bytes = service.process_audio_file(contents, settings)
+    processed_bytes_dict = service.process_audio_file(contents, stems_to_process)
+    
+    first_stem = list(processed_bytes_dict.values())[0]
     
     return StreamingResponse(
-        io.BytesIO(processed_bytes), 
+        io.BytesIO(first_stem), 
         media_type="audio/wav",
         headers={"Content-Disposition": f"attachment; filename=processed_{file.filename}"}
     )
