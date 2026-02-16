@@ -2,6 +2,7 @@ import pytest
 import os
 from unittest.mock import MagicMock, patch, ANY
 from services.processor_service import ProcessorService
+from services.processor_service import OUTPUT_DIR
 
 @pytest.fixture
 def mock_runner():
@@ -127,3 +128,74 @@ def test_should_raise_error_when_stems_list_is_empty(service, mock_runner):
     """
     with pytest.raises(ValueError, match="At least one stem must be requested"):
         service.process_audio_file(b"valid_audio", [])
+
+
+def test_save_results_creates_directory_and_files(service):
+    """
+    Senaryo: İşlenmiş bytes verileri kaydedilmek istenir.
+    Beklenen: job_id klasörü oluşmalı ve içindeki .wav dosyaları doğru içeriğe sahip olmalı.
+    """
+    # Arrange
+    processed_data = {
+        "vocals": b"fake-vocal-bytes",
+        "drums": b"fake-drum-bytes"
+    }
+
+    # Act
+    result = service.save_results(processed_data)
+
+    # Assert
+    job_id = result["job_id"]
+    paths = result["paths"]
+
+    assert len(paths) == 2
+    assert job_id is not None
+
+    # Fiziksel dosya kontrolü
+    for stem_name, data_bytes in processed_data.items():
+        # URL Kontrolü
+        expected_url = f"/static/{job_id}/{stem_name}.wav"
+        assert expected_url in paths
+
+        # ARTIK BURASI ÇALIŞIR: Doğrudan import ettiğimiz OUTPUT_DIR'i kullanıyoruz
+        actual_path = os.path.join(OUTPUT_DIR, job_id, f"{stem_name}.wav")
+        
+        assert os.path.exists(actual_path)
+        with open(actual_path, "rb") as f:
+            assert f.read() == data_bytes
+
+def test_save_results_generates_unique_job_ids(service):
+    """
+    Senaryo: Üst üste iki farklı işlem kaydedilir.
+    Beklenen: Her ikisinin job_id'si birbirinden farklı olmalı.
+    """
+    # Arrange
+    data = {"vocals": b"data"}
+    
+    # Act
+    res1 = service.save_results(data)
+    res2 = service.save_results(data)
+    
+    # Assert
+    assert res1["job_id"] != res2["job_id"]
+    assert res1["paths"][0] != res2["paths"][0]
+
+def test_cleanup_job_removes_entire_directory(service):
+    """
+    Senaryo: Cleanup metodu çağrılır.
+    Beklenen: İlgili job_id klasörü ve içindeki tüm dosyalar silinmeli.
+    """
+    # Arrange
+    data = {"vocals": b"data"}
+    saved = service.save_results(data)
+    job_id = saved["job_id"]
+    from services.processor_service import OUTPUT_DIR
+    job_path = os.path.join(OUTPUT_DIR, job_id)
+    
+    assert os.path.exists(job_path) # Önce var olduğunu teyit et
+    
+    # Act
+    service.cleanup_job(job_id)
+    
+    # Assert
+    assert not os.path.exists(job_path) # Silinmiş olmalı
