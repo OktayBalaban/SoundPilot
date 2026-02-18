@@ -1,8 +1,6 @@
 <script lang="ts">
     import { ProjectController } from '$lib/logic/ProjectController.svelte';
     import AudioMixer from '$lib/components/AudioMixer.svelte';
-    
-    // UI Components
     import Header from '$lib/components/ui/Header.svelte';
     import ProcessingOverlay from '$lib/components/ui/ProcessingOverlay.svelte';
     import EmptyProjectState from '$lib/components/ui/EmptyProjectState.svelte';
@@ -16,7 +14,7 @@
     }
 </script>
 
-<div class="min-h-screen bg-gray-950 text-gray-100 font-sans p-6">
+<div class="min-h-screen font-sans p-6">
     <Header 
         isProcessing={project.isProcessing} 
         onUpload={onFileSelected} 

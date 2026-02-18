@@ -1,4 +1,4 @@
-// See https://svelte.dev/docs/kit/types#app.d.ts
+// See https://kit.svelte.dev/docs/types#app
 // for information about these interfaces
 declare global {
 	namespace App {
@@ -8,6 +8,12 @@ declare global {
 		// interface PageState {}
 		// interface Platform {}
 	}
+}
+
+declare module "*.svelte" {
+    import type { Component } from "svelte";
+    const component: Component<any>;
+    export default component;
 }
 
 export {};

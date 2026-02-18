@@ -1,9 +1,15 @@
 <script lang="ts">
     import './layout.css';
-    import '$lib/i18n'; 
-    import { isLoading } from 'svelte-i18n';
+    import '$lib/i18n';
+    import { isLoading, locale } from 'svelte-i18n';
     
     let { children } = $props();
+
+    $effect(() => {
+        if ($locale) {
+            document.documentElement.setAttribute('lang', $locale);
+        }
+    });
 </script>
 
 {#if $isLoading}
