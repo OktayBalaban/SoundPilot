@@ -4,7 +4,6 @@ import uuid
 import shutil
 from typing import List, Dict
 
-# Çıktıların ana dizini (backend/outputs)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
 
@@ -14,7 +13,6 @@ class ProcessorService:
         os.makedirs(OUTPUT_DIR, exist_ok=True)
 
     def process_audio_file(self, file_contents: bytes, stems: List[str]) -> Dict[str, bytes]:
-
         if not file_contents:
             raise ValueError("Empty file contents")
         if not stems:
@@ -50,23 +48,19 @@ class ProcessorService:
         }
 
     def _create_temp_file(self, contents: bytes) -> str:
-        """Geçici bir .wav dosyası oluşturur ve yolunu döner."""
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as temp_file:
             temp_file.write(contents)
             return temp_file.name
 
     def _safe_remove(self, path: str):
-        """Dosyayı güvenli bir şekilde siler."""
         try:
             if os.path.exists(path):
                 os.remove(path)
         except Exception as e:
-            print(f"Dosya silme hatası: {path} - {e}")
+            # TODO: Use a proper logger instead of print
+            print(f"Error removing file: {path} - {e}")
 
     def cleanup_job(self, job_id: str):
-        """
-        İsteğe bağlı: Belirli bir işlemi diskten tamamen temizlemek için kullanılır.
-        """
         job_dir = os.path.join(OUTPUT_DIR, job_id)
         if os.path.exists(job_dir):
             shutil.rmtree(job_dir)

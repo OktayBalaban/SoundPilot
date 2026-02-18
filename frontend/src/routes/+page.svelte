@@ -1,9 +1,8 @@
 <script lang="ts">
     import { apiClient } from '$lib/api/client';
-    import AudioMixer from '$lib/components/AudioMixer.svelte';
+    import TrackRow from '$lib/components/TrackRow.svelte';
     import type { Track } from '$lib/types';
 
-    // Svelte 5 Runes: State tanımları
     let isProcessing = $state(false);
     let tracks = $state<Track[]>([]);
     let error = $state<string | null>(null);
@@ -14,30 +13,26 @@
 
         const file = input.files[0];
         
-        // State sıfırlama
         isProcessing = true;
         error = null;
         tracks = [];
 
         try {
             const response = await apiClient.separateAudio(file);
-            
-            // Backend'den gelen yolları Track modeline çevir
             tracks = response.processed_files.map((path, index) => {
                 let name = path.split(/[/\\]/).pop()?.replace('.wav', '') || `Track ${index}`;
                 name = name.charAt(0).toUpperCase() + name.slice(1);
 
                 return {
+                    id: crypto.randomUUID(),
                     name: name,
                     url: apiClient.getAudioUrl(path),
                     isMuted: false,
                     volume: 1.0
                 };
             });
-            
         } catch (err) {
-            console.error(err);
-            error = err instanceof Error ? err.message : 'Bilinmeyen bir hata oluştu';
+            error = err instanceof Error ? err.message : 'Unknown error';
         } finally {
             isProcessing = false;
         }

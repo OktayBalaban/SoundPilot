@@ -17,11 +17,8 @@ class DemucsRunner(AudioRunner):
         
         try:
             self._execute_demucs(file_path, output_dir, target_stems)
-            
             model_path = self._get_model_output_path(output_dir, file_path)
-            
             return self._collect_stems(model_path, target_stems)
-            
         finally:
             self._cleanup(output_dir)
 
@@ -33,16 +30,15 @@ class DemucsRunner(AudioRunner):
         result = subprocess.run(command, capture_output=True, text=True)
         
         if result.returncode != 0:
-            full_error = f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}"
-            print(f"--- DEMUCS FAILED ---\n{full_error}")
-            raise RuntimeError(f"Demucs CLI Error: {full_error}")
+            error_context = f"STDOUT: {result.stdout}\nSTDERR: {result.stderr}"
+            raise RuntimeError(f"Demucs CLI Error: {error_context}")
 
     def _get_model_output_path(self, output_dir: str, file_path: str) -> str:
         base_filename = os.path.splitext(os.path.basename(file_path))[0]
         path = os.path.join(output_dir, settings.demucs_model, base_filename)
         
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Expected output directory not found: {path}")
+            raise FileNotFoundError(f"Output directory missing: {path}")
         return path
 
     def _collect_stems(self, model_path: str, target_stems: List[str]) -> Dict[str, bytes]:
