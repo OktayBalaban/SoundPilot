@@ -1,0 +1,28 @@
+{
+  "app": {
+    "title": "AISound",
+    "subtitle": "Studio",
+    "description": "Clean Architecture Demucs Mixer"
+  },
+  "upload": {
+    "button": "UPLOAD SONG",
+    "processing": "PROCESSING..."
+  },
+  "status": {
+    "separating": "AI is separating stems...",
+    "wait": "This might take a minute depending on the song length."
+  },
+  "empty": {
+    "title": "No project loaded yet",
+    "description": "Upload an audio file to separate stems (vocals, drums, bass)."
+  },
+  "error": {
+    "default": "Unknown error occurred"
+  },
+  "tracks": {
+    "vocals": "Vocals",
+    "drums": "Drums",
+    "bass": "Bass",
+    "other": "Other"
+  }
+}

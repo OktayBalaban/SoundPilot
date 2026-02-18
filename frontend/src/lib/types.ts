@@ -1,9 +1,12 @@
 export interface Track {
+    id: string;
     name: string;
+    labelKey?: string;
     url: string;
     isMuted: boolean;
     volume: number;
 }
+// ...
 
 export interface ProcessResponse {
     job_id: string;
