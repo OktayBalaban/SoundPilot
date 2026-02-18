@@ -1,6 +1,7 @@
 <script lang="ts">
     import TrackRow from './TrackRow.svelte';
     import type { Track } from '$lib/types';
+    import { projectController } from '$lib/logic/ProjectController.svelte';
 
     let { tracks = $bindable<Track[]>([]) } = $props();
 
@@ -46,12 +47,12 @@
     });
 </script>
 
-<div class="bg-gray-900 rounded-3xl border border-gray-800 shadow-2xl overflow-hidden">
-    <div class="p-8 bg-gradient-to-b from-gray-800/40 to-transparent border-b border-gray-800">
-        <div class="flex items-center gap-8">
+<div class="bg-[#0a0a0a] rounded-3xl border border-white/5 shadow-2xl overflow-hidden">
+    <div class="p-8 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/5">
+        <div class="flex items-center gap-12">
             <button 
                 onclick={togglePlay}
-                class="w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-all shadow-xl shadow-blue-900/20 active:scale-90"
+                class="w-20 h-20 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-all shadow-xl shadow-blue-900/40 active:scale-95"
             >
                 {#if isPlaying}
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 fill-white" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
@@ -59,6 +60,27 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 fill-white translate-x-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                 {/if}
             </button>
+
+            <div class="flex items-center gap-6 bg-black/40 px-6 py-3 rounded-2xl border border-white/5">
+                <span class="text-[9px] font-black tracking-widest text-gray-500 uppercase">Pitch</span>
+                <div class="flex items-center gap-3">
+                    <button 
+                        onclick={() => projectController.setGlobalPitch(projectController.globalPitch - 1)}
+                        class="w-8 h-8 rounded-full border border-white/10 hover:bg-white/5 text-white transition-all active:scale-90"
+                    >-</button>
+                    
+                    <div class="w-12 text-center">
+                        <span class="text-xl font-black font-mono text-emerald-500">
+                            {projectController.globalPitch > 0 ? '+' : ''}{projectController.globalPitch}
+                        </span>
+                    </div>
+
+                    <button 
+                        onclick={() => projectController.setGlobalPitch(projectController.globalPitch + 1)}
+                        class="w-8 h-8 rounded-full border border-white/10 hover:bg-white/5 text-white transition-all active:scale-90"
+                    >+</button>
+                </div>
+            </div>
 
             <div class="flex-1">
                 <div class="flex justify-between items-end mb-4">
@@ -77,13 +99,13 @@
                     step="0.1"
                     value={currentTime} 
                     oninput={handleSeek}
-                    class="w-full h-3 bg-gray-800 rounded-full appearance-none cursor-pointer accent-blue-500 hover:accent-blue-400 transition-all"
+                    class="w-full h-2 bg-white/5 rounded-full appearance-none cursor-pointer accent-blue-500"
                 />
             </div>
         </div>
     </div>
 
-    <div class="p-6 space-y-3">
+    <div class="p-6 space-y-2">
         {#each tracks as track, i}
             <TrackRow bind:track={tracks[i]} bind:audioElement={audioElements[i]} />
         {/each}

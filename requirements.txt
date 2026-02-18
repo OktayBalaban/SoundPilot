@@ -10,3 +10,5 @@ pydantic-settings
 python-dotenv
 torchcodec
 requests
+librosa==0.10.1
+soundfile==0.12.1

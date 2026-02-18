@@ -1,7 +1,9 @@
 <script lang="ts">
     import type { Track } from '$lib/types';
+    import { projectController } from '$lib/logic/ProjectController.svelte';
+    import { onMount } from 'svelte';
+    import * as Tone from 'tone';
     
-    // Svelte 5 bindable props
     let { 
         track = $bindable(), 
         audioElement = $bindable() 
@@ -9,46 +11,111 @@
         track: Track, 
         audioElement: HTMLAudioElement | null 
     }>();
+
+    let pitchShift: Tone.PitchShift | null = null;
+    let limiter: Tone.Limiter | null = null;
+    let isInitialized = $state(false);
+
+    function getAudioSettings(label?: string) {
+        const key = label?.toLowerCase() || '';
+        if (key.includes('drums')) return { windowSize: 0.03, delayTime: 0.01 };
+        if (key.includes('bass')) return { windowSize: 0.4, delayTime: 0.1 }; 
+        if (key.includes('vocals')) return { windowSize: 0.09, delayTime: 0.05 };
+        return { windowSize: 0.1, delayTime: 0.05 };
+    }
+
+    onMount(() => {
+        if (audioElement) {
+            const settings = getAudioSettings(track.labelKey);
+
+            pitchShift = new Tone.PitchShift({
+                pitch: projectController.globalPitch,
+                windowSize: settings.windowSize,
+                delayTime: settings.delayTime
+            });
+
+            limiter = new Tone.Limiter(-1).toDestination();
+            
+            const source = Tone.getContext().createMediaElementSource(audioElement);
+            Tone.connect(source, pitchShift);
+            Tone.connect(pitchShift, limiter);
+
+            isInitialized = true;
+        }
+
+        return () => {
+            pitchShift?.dispose();
+            limiter?.dispose();
+        };
+    });
+
+    $effect(() => {
+        if (pitchShift && isInitialized) {
+            pitchShift.pitch = projectController.globalPitch;
+            if (Tone.getContext().state !== 'running') Tone.start();
+        }
+    });
 </script>
 
-<div class="grid grid-cols-[120px_1fr_150px] items-center gap-4 bg-gray-800/40 p-3 rounded-lg border border-gray-700 hover:border-gray-500 transition-all mb-2">
-    <div class="flex flex-col gap-2 border-r border-gray-700 pr-4">
-        <span class="text-white font-bold uppercase text-[10px] tracking-widest truncate">
+<div class="grid grid-cols-[120px_1fr_100px] sm:grid-cols-[140px_1fr_120px] items-center gap-2 sm:gap-4 bg-black/40 p-3 rounded-lg border border-white/5 hover:border-white/20 transition-all mb-2 overflow-hidden backdrop-blur-sm">
+    
+    <div class="flex flex-col gap-1.5 border-r border-white/5 pr-2 sm:pr-4 min-w-0">
+        <span class="text-gray-400 font-bold uppercase text-[9px] sm:text-[10px] tracking-[0.12em] truncate" title={track.name}>
             {track.name}
         </span>
         <button 
-            class="px-2 py-1 text-[10px] rounded font-bold transition-all
-            {track.isMuted ? 'bg-red-500/20 text-red-400 border border-red-500/50' : 'bg-gray-700 text-gray-400 hover:bg-gray-600'}"
+            class="px-2 py-1 text-[8px] sm:text-[9px] rounded font-black transition-all uppercase
+            {track.isMuted ? 'bg-red-950/40 text-red-500 border border-red-900/30' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300'}"
             onclick={() => track.isMuted = !track.isMuted}
         >
             {track.isMuted ? 'MUTED' : 'MUTE'}
         </button>
     </div>
 
-    <div class="flex-1 px-4">
+    <div class="min-w-0 px-1 sm:px-2">
         <audio 
             bind:this={audioElement}
             src={track.url}
             muted={track.isMuted}
             bind:volume={track.volume}
             preload="auto"
+            crossorigin="anonymous" 
         ></audio>
-        <div class="h-8 bg-gray-900/50 rounded flex items-center px-3">
-             <div class="w-full h-1 bg-gray-700 rounded-full overflow-hidden">
-                <div class="h-full bg-blue-500/30" style="width: 100%"></div>
+        
+        <div class="h-10 bg-black/60 rounded flex items-center px-4 border border-white/5 shadow-inner">
+             <div class="w-full h-[1px] bg-white/10 rounded-full overflow-hidden">
+                <div class="h-full bg-blue-500/50 shadow-[0_0_8px_rgba(59,130,246,0.5)]" style="width: 100%"></div>
              </div>
         </div>
     </div>
 
-    <div class="flex items-center gap-3 px-2">
-        <span class="text-[10px] text-gray-500 font-mono w-6">VOL</span>
+    <div class="flex items-center gap-2 sm:gap-3 group pl-2 sm:pl-4 border-l border-white/5 min-w-0">
+        <span class="text-[9px] text-gray-600 font-bold font-mono w-6 sm:w-7 flex-shrink-0 group-hover:text-gray-400 transition-colors">VOL</span>
         <input 
             type="range" 
             min="0" 
             max="1" 
             step="0.01" 
             bind:value={track.volume}
-            class="w-full h-1.5 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            class="w-full min-w-0 h-[2px] bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-600"
         />
     </div>
 </div>
+
+<style>
+    input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        background: white;
+        cursor: pointer;
+        border: 1px solid rgba(0,0,0,0.5);
+        box-shadow: 0 0 5px rgba(255,255,255,0.2);
+    }
+
+    input[type="range"] {
+        width: 100%;
+        background: transparent;
+    }
+</style>
