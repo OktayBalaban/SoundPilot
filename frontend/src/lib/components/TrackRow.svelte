@@ -13,40 +13,17 @@
     }>();
 
     let pitchShift: Tone.PitchShift | null = null;
-    let limiter: Tone.Limiter | null = null;
     let isInitialized = $state(false);
-
-    function getAudioSettings(label?: string) {
-        const key = label?.toLowerCase() || '';
-        if (key.includes('drums')) return { windowSize: 0.03, delayTime: 0.01 };
-        if (key.includes('bass')) return { windowSize: 0.4, delayTime: 0.1 }; 
-        if (key.includes('vocals')) return { windowSize: 0.09, delayTime: 0.05 };
-        return { windowSize: 0.1, delayTime: 0.05 };
-    }
 
     onMount(() => {
         if (audioElement) {
-            const settings = getAudioSettings(track.labelKey);
-
-            pitchShift = new Tone.PitchShift({
-                pitch: projectController.globalPitch,
-                windowSize: settings.windowSize,
-                delayTime: settings.delayTime
-            });
-
-            limiter = new Tone.Limiter(-1).toDestination();
-            
+            pitchShift = new Tone.PitchShift(projectController.globalPitch);
             const source = Tone.getContext().createMediaElementSource(audioElement);
             Tone.connect(source, pitchShift);
-            Tone.connect(pitchShift, limiter);
-
+            pitchShift.toDestination();
             isInitialized = true;
         }
-
-        return () => {
-            pitchShift?.dispose();
-            limiter?.dispose();
-        };
+        return () => { pitchShift?.dispose(); };
     });
 
     $effect(() => {
@@ -59,13 +36,13 @@
 
 <div class="grid grid-cols-[120px_1fr_100px] sm:grid-cols-[140px_1fr_120px] items-center gap-2 sm:gap-4 bg-black/40 p-3 rounded-lg border border-white/5 hover:border-white/20 transition-all mb-2 overflow-hidden backdrop-blur-sm">
     
-    <div class="flex flex-col gap-1.5 border-r border-white/5 pr-2 sm:pr-4 min-w-0">
-        <span class="text-gray-400 font-bold uppercase text-[9px] sm:text-[10px] tracking-[0.12em] truncate" title={track.name}>
+    <div class="flex flex-col gap-1 border-r border-white/5 pr-2 sm:pr-4 min-w-0">
+        <span class="text-gray-400 font-bold uppercase text-[10px] tracking-[0.12em] truncate" title={track.name}>
             {track.name}
         </span>
         <button 
-            class="px-2 py-1 text-[8px] sm:text-[9px] rounded font-black transition-all uppercase
-            {track.isMuted ? 'bg-red-950/40 text-red-500 border border-red-900/30' : 'bg-white/5 text-gray-500 hover:bg-white/10 hover:text-gray-300'}"
+            class="px-2 py-1 text-[9px] rounded font-black transition-all uppercase
+            {track.isMuted ? 'bg-red-950/40 text-red-500 border border-red-900/30' : 'bg-white/5 text-gray-500 hover:bg-white/10'}"
             onclick={() => track.isMuted = !track.isMuted}
         >
             {track.isMuted ? 'MUTED' : 'MUTE'}
@@ -90,7 +67,7 @@
     </div>
 
     <div class="flex items-center gap-2 sm:gap-3 group pl-2 sm:pl-4 border-l border-white/5 min-w-0">
-        <span class="text-[9px] text-gray-600 font-bold font-mono w-6 sm:w-7 flex-shrink-0 group-hover:text-gray-400 transition-colors">VOL</span>
+        <span class="text-[9px] text-gray-600 font-bold font-mono w-6 sm:w-7 flex-shrink-0 group-hover:text-gray-400">VOL</span>
         <input 
             type="range" 
             min="0" 
@@ -103,6 +80,7 @@
 </div>
 
 <style>
+    /* Slider Başlığı (Thumb) */
     input[type="range"]::-webkit-slider-thumb {
         appearance: none;
         height: 10px;
@@ -111,9 +89,9 @@
         background: white;
         cursor: pointer;
         border: 1px solid rgba(0,0,0,0.5);
-        box-shadow: 0 0 5px rgba(255,255,255,0.2);
     }
 
+    /* Track (Ray) genişliğini zorla */
     input[type="range"] {
         width: 100%;
         background: transparent;
