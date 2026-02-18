@@ -35,8 +35,7 @@ def test_env_temp_dir_permissions():
 
 @pytest.fixture
 def runner():
-    # Eksik argümanları (varsayılan değerlerle) buraya ekliyoruz
-    return DemucsRunner(model_name="htdemucs", default_stems=["vocals", "drums", "bass", "other"])
+    return DemucsRunner(model_name="htdemucs")
 
 def test_unit_get_model_output_path_logic(runner):
     """Checks if the runner correctly predicts where Demucs will save files."""

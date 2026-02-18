@@ -11,15 +11,17 @@ async def process_audio(
     selection: StemSelection = Depends(),
     service: ProcessorService = Depends(get_processor_service)
 ):
+ 
     try:
         contents = await file.read()
-        
-        selection_dict = selection.model_dump() if hasattr(selection, 'model_dump') else selection.dict()
+        selection_dict = selection.model_dump()
         stems_to_process = [k for k, v in selection_dict.items() if v]
         
-        processed_bytes = service.process_audio_file(contents, stems_to_process)
-        
-        saved_result = service.save_results(processed_bytes)
+        if not stems_to_process:
+            stems_to_process = ["vocals", "drums", "bass", "other"]
+
+        processed_data = service.process_audio_file(contents, stems_to_process)
+        saved_result = service.save_results(processed_data)
 
         return ProcessResponse(
             job_id=saved_result["job_id"],

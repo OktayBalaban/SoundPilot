@@ -24,13 +24,6 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=OUTPUT_DIR), name="static")
 
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-        status_code=500,
-        content={"detail": f"Audio processing failed: {str(exc)}"},
-    )
-
 app.include_router(router, prefix="/api/v1/processor")
 
 if __name__ == "__main__":

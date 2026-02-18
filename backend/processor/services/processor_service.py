@@ -1,16 +1,12 @@
 import tempfile
 import os
 import uuid
-import shutil
 from typing import List, Dict
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
-
 class ProcessorService:
-    def __init__(self, runner):
+    def __init__(self, runner, storage):
         self.runner = runner
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        self.storage = storage
 
     def process_audio_file(self, file_contents: bytes, stems: List[str]) -> Dict[str, bytes]:
         if not file_contents:
@@ -27,24 +23,15 @@ class ProcessorService:
 
     def save_results(self, processed_data: Dict[str, bytes]) -> Dict:
         job_id = str(uuid.uuid4())
-        job_dir = os.path.join(OUTPUT_DIR, job_id)
-        os.makedirs(job_dir, exist_ok=True)
-        
-        file_urls = []
+        urls = []
         
         for stem_name, audio_bytes in processed_data.items():
-            filename = f"{stem_name}.wav"
-            file_path = os.path.join(job_dir, filename)
-            
-            with open(file_path, "wb") as f:
-                f.write(audio_bytes)
-            
-            web_url = f"/static/{job_id}/{filename}"
-            file_urls.append(web_url)
+            url = self.storage.save_result(job_id, stem_name, audio_bytes)
+            urls.append(url)
             
         return {
             "job_id": job_id,
-            "paths": file_urls
+            "paths": urls
         }
 
     def _create_temp_file(self, contents: bytes) -> str:
@@ -56,11 +43,8 @@ class ProcessorService:
         try:
             if os.path.exists(path):
                 os.remove(path)
-        except Exception as e:
-            # TODO: Use a proper logger instead of print
-            print(f"Error removing file: {path} - {e}")
+        except Exception:
+            pass
 
     def cleanup_job(self, job_id: str):
-        job_dir = os.path.join(OUTPUT_DIR, job_id)
-        if os.path.exists(job_dir):
-            shutil.rmtree(job_dir)
+        self.storage.delete_job(job_id)

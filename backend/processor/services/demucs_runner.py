@@ -3,16 +3,14 @@ import os
 import shutil
 import tempfile
 from typing import Dict, List
-from services.base_runner import AudioRunner
-from api.config import settings
+from .base_runner import AudioRunner
 
 class DemucsRunner(AudioRunner):
-    def __init__(self, model_name: str, default_stems: str):
+    def __init__(self, model_name: str):
         self.model_name = model_name
-        self.default_stems = default_stems
 
     def run(self, file_path: str, stems: List[str] = None) -> Dict[str, bytes]:
-        target_stems = stems if stems else [self.default_stems]
+        target_stems = stems if stems else []
         output_dir = tempfile.mkdtemp()
         
         try:
@@ -23,7 +21,8 @@ class DemucsRunner(AudioRunner):
             self._cleanup(output_dir)
 
     def _execute_demucs(self, file_path: str, output_dir: str, stems: List[str]):
-        command = ["demucs", "-n", settings.demucs_model, "-o", output_dir, file_path]
+        command = ["demucs", "-n", self.model_name, "-o", output_dir, file_path]
+        
         if len(stems) == 1:
             command.extend(["--two-stems", stems[0]])
         
@@ -35,14 +34,14 @@ class DemucsRunner(AudioRunner):
 
     def _get_model_output_path(self, output_dir: str, file_path: str) -> str:
         base_filename = os.path.splitext(os.path.basename(file_path))[0]
-        path = os.path.join(output_dir, settings.demucs_model, base_filename)
+        path = os.path.join(output_dir, self.model_name, base_filename)
         
         if not os.path.exists(path):
-            raise FileNotFoundError(f"Output directory missing: {path}")
+            raise FileNotFoundError(f"Expected output directory not found: {path}")
         return path
 
     def _collect_stems(self, model_path: str, target_stems: List[str]) -> Dict[str, bytes]:
-        if len(target_stems) > 1:
+        if target_stems:
             return self._fetch_requested_stems(model_path, target_stems)
         return self._fetch_all_available_stems(model_path)
 
