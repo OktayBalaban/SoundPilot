@@ -1,6 +1,6 @@
 import os
 import shutil
-from .base_storage import StorageService
+from ..core.base_storage import StorageService
 
 class LocalStorageService(StorageService):
     def __init__(self, base_path: str, static_url_prefix: str):
@@ -18,7 +18,7 @@ class LocalStorageService(StorageService):
         with open(file_path, "wb") as f:
             f.write(data)
             
-        return f"{self.static_url_prefix}/{job_id}/{filename}"
+        return f"http://localhost:8001/files/{job_id}/{stem_name}.wav"
 
     def delete_job(self, job_id: str):
         job_dir = os.path.join(self.base_path, job_id)
