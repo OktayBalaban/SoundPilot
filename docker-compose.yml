@@ -1,0 +1,44 @@
+services:
+  storage:
+    build:
+      context: ./backend/storage
+    container_name: aisound_storage
+    ports:
+      - "${STORAGE_PORT}:8001"
+    volumes:
+      - ${STORAGE_DATA_PATH}:/app/data
+    restart: unless-stopped
+
+  processor:
+    build:
+      context: ./backend/processor
+    container_name: aisound_processor
+    ports:
+      - "${PROCESSOR_PORT}:8000"
+    environment:
+      - STORAGE_API_BASE_URL=${STORAGE_API_BASE_URL}
+    depends_on:
+      - storage
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: aisound_frontend
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    environment:
+      - ORIGIN=${ORIGIN}
+      - HOST=${HOST}
+      - PUBLIC_PROCESSOR_API_BASE_URL=${PUBLIC_PROCESSOR_API_BASE_URL}
+      - INTERNAL_PROCESSOR_API_URL=${INTERNAL_PROCESSOR_API_URL}
+    depends_on:
+      - processor
+    restart: unless-stopped
