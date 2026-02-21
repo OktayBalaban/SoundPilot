@@ -1,6 +1,4 @@
 import pytest
-import os
-import shutil
 from services.local_storage import LocalStorageService
 
 @pytest.fixture
