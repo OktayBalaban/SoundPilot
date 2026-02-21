@@ -5,13 +5,8 @@ from api.config import settings
 import os
 
 def get_storage_service():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    output_path = os.path.join(base_dir, "outputs")
-    
-    return LocalStorageService(
-        base_path=output_path,
-        static_url_prefix="/static"
-    )
+    # Artık LocalStorageService yerine RemoteStorageService dönüyoruz
+    return RemoteStorageService(base_url="http://localhost:8001")
 
 def get_processor_service():
     runner = DemucsRunner(model_name=settings.demucs_model)
