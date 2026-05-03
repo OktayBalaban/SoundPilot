@@ -1,8 +1,8 @@
 # SoundPilot
 
-![SoundPilot](screenshot.png)
-
 A lightweight tool for splitting songs into stems. Paste a YouTube link or drop an audio file — get isolated vocals, drums, bass, and instruments. Mix them however you want.
+
+![SoundPilot](screenshot.png)
 
 ## Features
 
