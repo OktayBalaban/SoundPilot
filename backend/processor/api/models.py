@@ -11,3 +11,6 @@ class ProcessResponse(BaseModel):
     job_id: str
     status: str
     processed_files: List[str]
+
+class URLRequest(BaseModel):
+    url: str

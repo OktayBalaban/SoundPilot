@@ -103,3 +103,94 @@ def test_cleanup_job_removes_data_via_storage(service, mock_storage):
     """
     service.cleanup_job("test-job-id")
     mock_storage.delete_job.assert_called_once_with("test-job-id")
+
+
+def test_process_url_calls_downloader_and_runner(mock_runner, mock_storage):
+    """
+    Scenario: Processing audio from a YouTube URL.
+    Expected: Downloader is called, runner processes, results are saved.
+    """
+    mock_downloader = MagicMock()
+    service = ProcessorService(mock_runner, mock_storage, mock_downloader)
+
+    import tempfile
+    temp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    temp.write(b"fake-downloaded-audio")
+    temp.close()
+
+    mock_downloader.download.return_value = temp.name
+    mock_runner.run.return_value = {"vocals": b"vocal-data"}
+
+    result = service.process_url("https://youtube.com/watch?v=test", ["vocals"])
+
+    mock_downloader.download.assert_called_once_with("https://youtube.com/watch?v=test")
+    mock_runner.run.assert_called_once()
+    assert "job_id" in result
+    assert "paths" in result
+    mock_storage.save_result.assert_called_once()
+
+
+def test_process_url_raises_error_when_url_is_empty(mock_runner, mock_storage):
+    """
+    Scenario: Empty URL provided.
+    Expected: ValueError is raised.
+    """
+    mock_downloader = MagicMock()
+    service = ProcessorService(mock_runner, mock_storage, mock_downloader)
+
+    with pytest.raises(ValueError, match="URL cannot be empty"):
+        service.process_url("", ["vocals"])
+
+
+def test_process_url_raises_error_when_no_downloader(mock_runner, mock_storage):
+    """
+    Scenario: Service created without a downloader.
+    Expected: RuntimeError is raised.
+    """
+    service = ProcessorService(mock_runner, mock_storage, downloader=None)
+
+    with pytest.raises(RuntimeError, match="No downloader configured"):
+        service.process_url("https://youtube.com/watch?v=test", ["vocals"])
+
+
+def test_process_url_cleans_up_temp_file_after_success(mock_runner, mock_storage):
+    """
+    Scenario: Successful URL processing.
+    Expected: Temp file is deleted after processing.
+    """
+    mock_downloader = MagicMock()
+    service = ProcessorService(mock_runner, mock_storage, mock_downloader)
+
+    import tempfile
+    temp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    temp.write(b"audio-data")
+    temp.close()
+
+    mock_downloader.download.return_value = temp.name
+    mock_runner.run.return_value = {"vocals": b"data"}
+
+    service.process_url("https://youtube.com/watch?v=test", ["vocals"])
+
+    assert not os.path.exists(temp.name)
+
+
+def test_process_url_cleans_up_temp_file_on_failure(mock_runner, mock_storage):
+    """
+    Scenario: Runner crashes during URL processing.
+    Expected: Temp file is still cleaned up.
+    """
+    mock_downloader = MagicMock()
+    service = ProcessorService(mock_runner, mock_storage, mock_downloader)
+
+    import tempfile
+    temp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
+    temp.write(b"audio-data")
+    temp.close()
+
+    mock_downloader.download.return_value = temp.name
+    mock_runner.run.side_effect = RuntimeError("Demucs crashed")
+
+    with pytest.raises(RuntimeError):
+        service.process_url("https://youtube.com/watch?v=test", ["vocals"])
+
+    assert not os.path.exists(temp.name)
