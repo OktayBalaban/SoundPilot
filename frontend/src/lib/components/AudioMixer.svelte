@@ -2,6 +2,7 @@
     import TrackRow from './TrackRow.svelte';
     import type { Track } from '$lib/types';
     import { projectController } from '$lib/logic/ProjectController.svelte';
+    import { onMount } from 'svelte';
 
     let { tracks = $bindable<Track[]>([]) } = $props();
 
@@ -10,9 +11,22 @@
     let duration = $state(0);
     let audioElements = $state<HTMLAudioElement[]>([]);
 
+    function stopAll() {
+        isPlaying = false;
+        currentTime = 0;
+        duration = 0;
+        audioElements.forEach(a => {
+            if (a) {
+                a.pause();
+                a.currentTime = 0;
+            }
+        });
+    }
+
     function togglePlay() {
         if (tracks.length === 0) return;
         isPlaying = !isPlaying;
+
         audioElements.forEach(audio => {
             if (audio) {
                 isPlaying ? audio.play() : audio.pause();
@@ -34,6 +48,18 @@
         return `${m}:${s.toString().padStart(2, '0')}`;
     }
 
+    onMount(() => {
+        return () => {
+            // Cleanup on destroy — stop all audio
+            audioElements.forEach(a => {
+                if (a) {
+                    a.pause();
+                    a.src = '';
+                }
+            });
+        };
+    });
+
     $effect(() => {
         let interval: number;
         if (isPlaying) {
@@ -43,11 +69,7 @@
                     currentTime = master.currentTime;
                     if (duration === 0) duration = master.duration;
                     if (master.ended) {
-                        isPlaying = false;
-                        currentTime = 0;
-                        audioElements.forEach(a => {
-                            if (a) { a.pause(); a.currentTime = 0; }
-                        });
+                        stopAll();
                     }
                 }
             }, 100);
@@ -126,7 +148,7 @@
         align-items: center;
         justify-content: center;
         background: var(--accent);
-        color: #000;
+        color: #fff;
         border: none;
         border-radius: 50%;
         cursor: pointer;

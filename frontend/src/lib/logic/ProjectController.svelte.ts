@@ -8,14 +8,19 @@ export class ProjectController {
     error = $state<string | null>(null);
     sessionId = $state(0);
 
-    // Library state
     library = $state<SongEntry[]>([]);
     isLibraryLoading = $state(false);
     currentSongId = $state<string | null>(null);
 
-    private resetPlayback() {
+    private loadTracks(newTracks: Track[], songId: string | null = null) {
         this.tracks = [];
         this.sessionId++;
+        this.currentSongId = songId;
+
+        // Let Svelte destroy old mixer before creating new one
+        requestAnimationFrame(() => {
+            this.tracks = newTracks;
+        });
     }
 
     async handleUpload(file: File | undefined) {
@@ -23,12 +28,15 @@ export class ProjectController {
 
         this.isProcessing = true;
         this.error = null;
-        this.resetPlayback();
+        this.tracks = [];
+        this.sessionId++;
 
         try {
             const response = await apiClient.separateAudio(file);
-            this.tracks = this.mapResponseToTracks(response.processed_files);
-            this.currentSongId = response.job_id;
+            this.loadTracks(
+                this.mapResponseToTracks(response.processed_files),
+                response.job_id
+            );
             await this.loadLibrary();
         } catch (err) {
             this.error = err instanceof Error ? err.message : 'Unknown error occurred during processing';
@@ -42,12 +50,15 @@ export class ProjectController {
 
         this.isProcessing = true;
         this.error = null;
-        this.resetPlayback();
+        this.tracks = [];
+        this.sessionId++;
 
         try {
             const response = await apiClient.separateFromURL(url);
-            this.tracks = this.mapResponseToTracks(response.processed_files);
-            this.currentSongId = response.job_id;
+            this.loadTracks(
+                this.mapResponseToTracks(response.processed_files),
+                response.job_id
+            );
             await this.loadLibrary();
         } catch (err) {
             this.error = err instanceof Error ? err.message : 'Unknown error occurred during processing';
@@ -70,24 +81,21 @@ export class ProjectController {
 
     loadSong(song: SongEntry) {
         if (!song.is_valid) return;
+        if (this.currentSongId === song.id) return;
 
         this.error = null;
-        this.resetPlayback();
-        this.currentSongId = song.id;
 
-        // Use setTimeout to let Svelte destroy old components first
-        setTimeout(() => {
-            this.tracks = Object.entries(song.stems).map(([name, url]) => ({
-                id: crypto.randomUUID(),
-                name: name.charAt(0).toUpperCase() + name.slice(1),
-                labelKey: ['vocals', 'drums', 'bass', 'other'].includes(name) ? `tracks.${name}` : undefined,
-                url,
-                isMuted: false,
-                volume: 1.0,
-                pitch: 0
-            }));
-            this.sessionId++;
-        }, 0);
+        const newTracks = Object.entries(song.stems).map(([name, url]) => ({
+            id: crypto.randomUUID(),
+            name: name.charAt(0).toUpperCase() + name.slice(1),
+            labelKey: ['vocals', 'drums', 'bass', 'other'].includes(name) ? `tracks.${name}` : undefined,
+            url,
+            isMuted: false,
+            volume: 1.0,
+            pitch: 0
+        }));
+
+        this.loadTracks(newTracks, song.id);
     }
 
     async deleteSong(songId: string) {
@@ -95,7 +103,8 @@ export class ProjectController {
             await apiClient.deleteSong(songId);
             this.library = this.library.filter(s => s.id !== songId);
             if (this.currentSongId === songId) {
-                this.resetPlayback();
+                this.tracks = [];
+                this.sessionId++;
                 this.currentSongId = null;
             }
         } catch (err) {
