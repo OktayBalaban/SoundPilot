@@ -1,0 +1,28 @@
+{
+  "app": {
+    "title": "AISound",
+    "subtitle": "Stüdyo",
+    "description": "Temiz Mimari Demucs Mikseri"
+  },
+  "upload": {
+    "button": "ŞARKI YÜKLE",
+    "processing": "İŞLENİYOR..."
+  },
+  "status": {
+    "separating": "Yapay zeka kanalları ayırıyor...",
+    "wait": "Şarkı uzunluğuna bağlı olarak bu işlem bir dakika sürebilir."
+  },
+  "empty": {
+    "title": "Henüz proje yüklenmedi",
+    "description": "Kanalları (vokal, davul, bas) ayırmak için bir ses dosyası yükleyin."
+  },
+  "error": {
+    "default": "Bilinmeyen bir hata oluştu"
+  },
+  "tracks": {
+    "vocals": "Vokal",
+    "drums": "Davul",
+    "bass": "Bas",
+    "other": "Diğer"
+  }
+}
