@@ -1,0 +1,6 @@
+# backend/storage/.gitignore
+
+# Ignore all processing data
+data/
+# But keep the directory structure if needed (optional)
+!data/.gitkeep

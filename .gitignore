@@ -1,0 +1,44 @@
+# --- GENEL SİSTEM ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# --- PYTHON (Backend) ---
+# Bytecode - Python'ın derlediği geçici dosyalar
+__pycache__/
+*.pyc
+
+# Sanal Ortamlar (Seninki üstte olsa bile buraya eklemek güvenliktir)
+venv/
+env/
+.venv/
+
+# Hassas Bilgiler (API Key vs.)
+.env
+backend/.env
+
+# AI Çıktıları (Ses dosyalarını versiyonlamıyoruz!)
+*.wav
+*.mp3
+backend/outputs/
+backend/processor/tests/manuel_tests/outputs/
+
+# --- NODE.JS / SVELTE (Frontend) ---
+# Kütüphaneler (En önemlisi bu! Asla git'e gitmemeli)
+node_modules/
+frontend/node_modules/
+
+# Build Çıktıları
+.svelte-kit/
+build/
+dist/
+
+# Frontend Hassas Bilgiler
+frontend/.env
+frontend/.env.local
+
+# Loglar
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

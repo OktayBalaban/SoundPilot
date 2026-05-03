@@ -1,0 +1,31 @@
+import pytest
+import json
+from core.metadata_service import MetadataService
+
+
+@pytest.fixture
+def meta_service():
+    return MetadataService()
+
+
+def test_write_and_read_metadata(meta_service, tmp_path):
+    meta_service.write(str(tmp_path), "Test Song", "https://youtube.com/123")
+    result = meta_service.read(str(tmp_path))
+
+    assert result["title"] == "Test Song"
+    assert result["source_url"] == "https://youtube.com/123"
+    assert "created_at" in result
+
+
+def test_read_nonexistent_metadata(meta_service, tmp_path):
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    assert meta_service.read(str(empty)) is None
+
+
+def test_write_creates_json_file(meta_service, tmp_path):
+    meta_service.write(str(tmp_path), "My Song")
+    path = tmp_path / "metadata.json"
+    assert path.exists()
+    data = json.loads(path.read_text())
+    assert data["title"] == "My Song"

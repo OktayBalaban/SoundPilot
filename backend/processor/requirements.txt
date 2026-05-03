@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-multipart
+demucs
+torch
+torchaudio
+torchcodec
+pydantic-settings
+pytest
+httpx
+yt-dlp
