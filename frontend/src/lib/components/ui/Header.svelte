@@ -12,7 +12,7 @@
 
 <header class="max-w-5xl mx-auto mb-10 flex justify-between items-start border-b border-gray-200 pb-8">
     <div>
-        <h1 class="text-4xl font-black tracking-tighter text-gray-900">
+        <h1 class="text-4xl font-black tracking-tighter text-white">    
             {$t('app.title')}
         </h1>
     </div>
