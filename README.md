@@ -1,5 +1,7 @@
 # SoundPilot
 
+![SoundPilot](screenshot.png)
+
 Paste a YouTube link or upload an audio file — SoundPilot separates vocals, drums, bass, and other instruments into individual tracks. Mix them with real-time pitch shifting, mute, and volume controls.
 
 Built with Demucs (Meta AI), FastAPI, SvelteKit, and Tone.js.
@@ -18,7 +20,6 @@ Built with Demucs (Meta AI), FastAPI, SvelteKit, and Tone.js.
 ```bash
 git clone https://github.com/OktayBalaban/SoundPilot.git
 cd SoundPilot
-cp .env.example .env
 docker compose up --build
 ```
 
