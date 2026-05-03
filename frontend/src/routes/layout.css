@@ -1,22 +1,22 @@
 :root {
-    --bg-primary: #0f1117;
-    --bg-secondary: #161921;
-    --bg-elevated: #1c1f2b;
-    --bg-hover: #232735;
+    --bg-primary: #1a2a2a;
+    --bg-secondary: #213333;
+    --bg-elevated: #2a3d3d;
+    --bg-hover: #324848;
 
-    --text-primary: #eef0f6;
-    --text-secondary: #9ba1b0;
-    --text-muted: #5c6170;
+    --text-primary: #e0e8e8;
+    --text-secondary: #9fb3b3;
+    --text-muted: #6b8585;
 
-    --accent: #4f8ff7;
-    --accent-hover: #6ba1ff;
-    --accent-dim: rgba(79, 143, 247, 0.15);
+    --accent: #e8922a;
+    --accent-hover: #f0a540;
+    --accent-dim: rgba(232, 146, 42, 0.15);
 
     --border: rgba(255, 255, 255, 0.08);
     --border-hover: rgba(255, 255, 255, 0.15);
 
-    --danger: #ef4444;
-    --success: #22c55e;
+    --danger: #e05555;
+    --success: #4caf6a;
 
     --font-body: 'DM Sans', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
@@ -42,7 +42,7 @@ body {
 
 ::selection {
     background: var(--accent);
-    color: #fff;
+    color: #000;
 }
 
 ::-webkit-scrollbar {

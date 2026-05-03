@@ -16,15 +16,15 @@
     let isInitialized = $state(false);
 
     const trackColors: Record<string, string> = {
-        vocals: '#4f8ff7',
-        drums: '#ef4444',
-        bass: '#f59e0b',
-        other: '#22c55e'
+        vocals: '#e8922a',
+        drums: '#e05555',
+        bass: '#4caf6a',
+        other: '#5a9fd4'
     };
 
     function getTrackColor(): string {
         const key = track.name.toLowerCase();
-        return trackColors[key] || '#9ba1b0';
+        return trackColors[key] || '#9fb3b3';
     }
 
     onMount(() => {
@@ -72,7 +72,6 @@
     </div>
 
     <div class="volume-control">
-        <span class="volume-label">VOL</span>
         <input
             type="range"
             min="0"
@@ -80,7 +79,6 @@
             step="0.01"
             bind:value={track.volume}
             class="volume-slider"
-            style="--track-color: {getTrackColor()}"
         />
         <span class="volume-value">{Math.round(track.volume * 100)}</span>
     </div>
@@ -89,9 +87,9 @@
 <style>
     .track {
         display: grid;
-        grid-template-columns: 3px 110px 32px 1fr 160px;
+        grid-template-columns: 3px 100px 32px 1fr 140px;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         padding: 10px 14px;
         background: var(--bg-primary);
         border-radius: var(--radius-sm);
@@ -148,9 +146,9 @@
     }
 
     .mute-btn.active {
-        background: rgba(239, 68, 68, 0.15);
+        background: rgba(224, 85, 85, 0.15);
         color: var(--danger);
-        border-color: rgba(239, 68, 68, 0.3);
+        border-color: rgba(224, 85, 85, 0.3);
     }
 
     .track-spacer {
@@ -160,15 +158,8 @@
     .volume-control {
         display: flex;
         align-items: center;
-        gap: 8px;
-    }
-
-    .volume-label {
-        font-family: var(--font-mono);
-        font-size: 9px;
-        font-weight: 600;
-        color: var(--text-muted);
-        letter-spacing: 0.1em;
+        gap: 6px;
+        padding-right: 4px;
     }
 
     .volume-slider {
@@ -180,33 +171,35 @@
         border-radius: 2px;
         outline: none;
         cursor: pointer;
+        min-width: 0;
     }
 
     .volume-slider::-webkit-slider-thumb {
         -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         background: var(--text-primary);
         border-radius: 50%;
         cursor: pointer;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
     .volume-slider::-moz-range-thumb {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         background: var(--text-primary);
         border-radius: 50%;
         cursor: pointer;
         border: none;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
     }
 
     .volume-value {
         font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--text-secondary);
-        width: 26px;
+        font-size: 10px;
+        color: var(--text-muted);
+        width: 22px;
         text-align: right;
+        flex-shrink: 0;
     }
 </style>
