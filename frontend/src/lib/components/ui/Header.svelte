@@ -13,11 +13,8 @@
 <header class="max-w-5xl mx-auto mb-10 flex justify-between items-start border-b border-gray-200 pb-8">
     <div>
         <h1 class="text-4xl font-black tracking-tighter text-gray-900">
-            {$t('app.title')} <span class="text-blue-600">{$t('app.subtitle')}</span>
+            {$t('app.title')}
         </h1>
-        <p class="text-gray-500 text-sm mt-1 uppercase tracking-widest font-medium">
-            {$t('app.description')}
-        </p>
     </div>
 
     <div class="flex flex-col items-end gap-4">

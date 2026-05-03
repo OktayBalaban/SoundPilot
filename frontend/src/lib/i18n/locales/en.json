@@ -1,8 +1,6 @@
 {
   "app": {
-    "title": "AISound",
-    "subtitle": "Studio",
-    "description": "Clean Architecture Demucs Mixer"
+    "title": "SoundPilot"
   },
   "upload": {
     "button": "UPLOAD SONG",

@@ -1,8 +1,6 @@
 {
   "app": {
-    "title": "AISound",
-    "subtitle": "Stüdyo",
-    "description": "Temiz Mimari Demucs Mikseri"
+    "title": "AISound"
   },
   "upload": {
     "button": "ŞARKI YÜKLE",
