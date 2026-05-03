@@ -8,27 +8,17 @@ export const apiClient = {
         const formData = new FormData();
         formData.append('file', file);
 
-        console.log("🚀 Uploading file to:", `${API_BASE}/api/v1/processor/process`);
+        const response = await fetch(`${API_BASE}/api/v1/processor/process`, {
+            method: 'POST',
+            body: formData
+        });
 
-        try {
-            const response = await fetch(`${API_BASE}/api/v1/processor/process`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                throw new Error(`Server Error (${response.status}): ${errorText}`);
-            }
-
-            const data: ProcessResponse = await response.json();
-            console.log("✅ SERVER RESPONSE (JSON):", data);
-            return data;
-
-        } catch (error) {
-            console.error("❌ API Error Detail:", error);
-            throw error;
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Server Error (${response.status}): ${errorText}`);
         }
+
+        return await response.json();
     },
 
     getAudioUrl(filePath: string): string {
