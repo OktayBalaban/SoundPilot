@@ -29,6 +29,7 @@ export class ProjectController {
             const response = await apiClient.separateAudio(file);
             this.tracks = this.mapResponseToTracks(response.processed_files);
             this.currentSongId = response.job_id;
+            await this.loadLibrary();
         } catch (err) {
             this.error = err instanceof Error ? err.message : 'Unknown error occurred during processing';
         } finally {

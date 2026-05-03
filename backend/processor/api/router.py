@@ -18,8 +18,11 @@ async def process_audio(
         contents = await file.read()
         stems = [k for k, v in selection.model_dump().items() if v] or ALL_STEMS
 
+        title = file.filename.rsplit('.', 1)[0] if file.filename else None
+
         processed_data = service.process_audio_file(contents, stems)
-        saved_result = service.save_results(processed_data)
+        saved_result = service.save_results(processed_data, title=title)
+        service.storage.save_metadata(saved_result["job_id"], title or saved_result["job_id"])
 
         return ProcessResponse(
             job_id=saved_result["job_id"],
