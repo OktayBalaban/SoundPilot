@@ -17,6 +17,14 @@ class RemoteStorageService(StorageService):
             )
             response.raise_for_status()
             return response.json()["url"]
+    
+    def save_metadata(self, job_id: str, title: str, source_url: str = ""):
+        with httpx.Client() as client:
+            response = client.post(
+                f"{self.endpoint}/library/{job_id}/metadata",
+                json={"title": title, "source_url": source_url}
+            )
+            response.raise_for_status()
 
     def delete_job(self, job_id: str):
         with httpx.Client() as client:

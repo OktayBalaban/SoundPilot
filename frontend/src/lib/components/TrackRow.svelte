@@ -3,17 +3,29 @@
     import { projectController } from '$lib/logic/ProjectController.svelte';
     import { onMount } from 'svelte';
     import * as Tone from 'tone';
-    
-    let { 
-        track = $bindable(), 
-        audioElement = $bindable() 
-    } = $props<{ 
-        track: Track, 
-        audioElement: HTMLAudioElement | null 
+
+    let {
+        track = $bindable(),
+        audioElement = $bindable()
+    } = $props<{
+        track: Track,
+        audioElement: HTMLAudioElement | null
     }>();
 
     let pitchShift: Tone.PitchShift | null = null;
     let isInitialized = $state(false);
+
+    const trackColors: Record<string, string> = {
+        vocals: '#e8922a',
+        drums: '#e05555',
+        bass: '#4caf6a',
+        other: '#5a9fd4'
+    };
+
+    function getTrackColor(): string {
+        const key = track.name.toLowerCase();
+        return trackColors[key] || '#9fb3b3';
+    }
 
     onMount(() => {
         if (audioElement) {
@@ -34,66 +46,160 @@
     });
 </script>
 
-<div class="grid grid-cols-[120px_1fr_100px] sm:grid-cols-[140px_1fr_120px] items-center gap-2 sm:gap-4 bg-black/40 p-3 rounded-lg border border-white/5 hover:border-white/20 transition-all mb-2 overflow-hidden backdrop-blur-sm">
-    
-    <div class="flex flex-col gap-1 border-r border-white/5 pr-2 sm:pr-4 min-w-0">
-        <span class="text-gray-400 font-bold uppercase text-[10px] tracking-[0.12em] truncate" title={track.name}>
-            {track.name}
-        </span>
-        <button 
-            class="px-2 py-1 text-[9px] rounded font-black transition-all uppercase
-            {track.isMuted ? 'bg-red-950/40 text-red-500 border border-red-900/30' : 'bg-white/5 text-gray-500 hover:bg-white/10'}"
-            onclick={() => track.isMuted = !track.isMuted}
-        >
-            {track.isMuted ? 'MUTED' : 'MUTE'}
-        </button>
+<div class="track" class:muted={track.isMuted}>
+    <div class="track-color" style="background: {getTrackColor()}"></div>
+
+    <div class="track-name">
+        <span class="name-text">{track.name}</span>
     </div>
 
-    <div class="min-w-0 px-1 sm:px-2">
-        <audio 
+    <button
+        class="mute-btn" class:active={track.isMuted}
+        onclick={() => track.isMuted = !track.isMuted}
+    >
+        M
+    </button>
+
+    <div class="track-spacer">
+        <audio
             bind:this={audioElement}
             src={track.url}
             muted={track.isMuted}
             bind:volume={track.volume}
             preload="auto"
-            crossorigin="anonymous" 
+            crossorigin="anonymous"
         ></audio>
-        
-        <div class="h-10 bg-black/60 rounded flex items-center px-4 border border-white/5 shadow-inner">
-             <div class="w-full h-[1px] bg-white/10 rounded-full overflow-hidden">
-                <div class="h-full bg-blue-500/50 shadow-[0_0_8px_rgba(59,130,246,0.5)]" style="width: 100%"></div>
-             </div>
-        </div>
     </div>
 
-    <div class="flex items-center gap-2 sm:gap-3 group pl-2 sm:pl-4 border-l border-white/5 min-w-0">
-        <span class="text-[9px] text-gray-600 font-bold font-mono w-6 sm:w-7 flex-shrink-0 group-hover:text-gray-400">VOL</span>
-        <input 
-            type="range" 
-            min="0" 
-            max="1" 
-            step="0.01" 
+    <div class="volume-control">
+        <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
             bind:value={track.volume}
-            class="w-full min-w-0 h-[2px] bg-white/10 rounded-lg appearance-none cursor-pointer accent-blue-600"
+            class="volume-slider"
         />
+        <span class="volume-value">{Math.round(track.volume * 100)}</span>
     </div>
 </div>
 
 <style>
-    /* Slider Başlığı (Thumb) */
-    input[type="range"]::-webkit-slider-thumb {
-        appearance: none;
-        height: 10px;
-        width: 10px;
-        border-radius: 50%;
-        background: white;
-        cursor: pointer;
-        border: 1px solid rgba(0,0,0,0.5);
+    .track {
+        display: grid;
+        grid-template-columns: 3px 100px 32px 1fr 140px;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 14px;
+        background: var(--bg-primary);
+        border-radius: var(--radius-sm);
+        margin-bottom: 4px;
+        transition: opacity 0.15s;
     }
 
-    /* Track (Ray) genişliğini zorla */
-    input[type="range"] {
-        width: 100%;
-        background: transparent;
+    .track:hover {
+        background: var(--bg-elevated);
+    }
+
+    .track.muted {
+        opacity: 0.4;
+    }
+
+    .track-color {
+        width: 3px;
+        height: 28px;
+        border-radius: 2px;
+    }
+
+    .track-name {
+        min-width: 0;
+    }
+
+    .name-text {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .mute-btn {
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--bg-elevated);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.1s;
+    }
+
+    .mute-btn:hover {
+        border-color: var(--border-hover);
+    }
+
+    .mute-btn.active {
+        background: rgba(224, 85, 85, 0.15);
+        color: var(--danger);
+        border-color: rgba(224, 85, 85, 0.3);
+    }
+
+    .track-spacer {
+        min-height: 32px;
+    }
+
+    .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding-right: 4px;
+    }
+
+    .volume-slider {
+        flex: 1;
+        height: 4px;
+        -webkit-appearance: none;
+        appearance: none;
+        background: var(--bg-hover);
+        border-radius: 2px;
+        outline: none;
+        cursor: pointer;
+        min-width: 0;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 12px;
+        height: 12px;
+        background: var(--text-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .volume-slider::-moz-range-thumb {
+        width: 12px;
+        height: 12px;
+        background: var(--text-primary);
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    }
+
+    .volume-value {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        color: var(--text-muted);
+        width: 22px;
+        text-align: right;
+        flex-shrink: 0;
     }
 </style>

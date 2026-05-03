@@ -8,3 +8,4 @@ torchcodec
 pydantic-settings
 pytest
 httpx
+yt-dlp

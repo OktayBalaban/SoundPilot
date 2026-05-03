@@ -2,21 +2,21 @@ services:
   storage:
     build:
       context: ./backend/storage
-    container_name: aisound_storage
+    container_name: soundpilot_storage
     ports:
-      - "${STORAGE_PORT}:8001"
+      - "8001:8001"
     volumes:
-      - ${STORAGE_DATA_PATH}:/app/data
+      - ./backend/storage/data:/app/data
     restart: unless-stopped
 
   processor:
     build:
       context: ./backend/processor
-    container_name: aisound_processor
+    container_name: soundpilot_processor
     ports:
-      - "${PROCESSOR_PORT}:8000"
+      - "8000:8000"
     environment:
-      - STORAGE_API_BASE_URL=${STORAGE_API_BASE_URL}
+      - STORAGE_API_BASE_URL=http://storage:8001
     depends_on:
       - storage
     restart: unless-stopped
@@ -31,14 +31,14 @@ services:
   frontend:
     build:
       context: ./frontend
-    container_name: aisound_frontend
+    container_name: soundpilot_frontend
     ports:
-      - "${FRONTEND_PORT}:3000"
+      - "3000:3000"
     environment:
-      - ORIGIN=${ORIGIN}
-      - HOST=${HOST}
-      - PUBLIC_PROCESSOR_API_BASE_URL=${PUBLIC_PROCESSOR_API_BASE_URL}
-      - INTERNAL_PROCESSOR_API_URL=${INTERNAL_PROCESSOR_API_URL}
+      - ORIGIN=http://localhost:3000
+      - HOST=0.0.0.0
+      - PUBLIC_PROCESSOR_API_BASE_URL=http://localhost:8000
+      - INTERNAL_PROCESSOR_API_URL=http://processor:8000
     depends_on:
       - processor
     restart: unless-stopped

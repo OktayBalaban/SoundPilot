@@ -2,6 +2,7 @@
     import TrackRow from './TrackRow.svelte';
     import type { Track } from '$lib/types';
     import { projectController } from '$lib/logic/ProjectController.svelte';
+    import { onMount } from 'svelte';
 
     let { tracks = $bindable<Track[]>([]) } = $props();
 
@@ -10,10 +11,22 @@
     let duration = $state(0);
     let audioElements = $state<HTMLAudioElement[]>([]);
 
+    function stopAll() {
+        isPlaying = false;
+        currentTime = 0;
+        duration = 0;
+        audioElements.forEach(a => {
+            if (a) {
+                a.pause();
+                a.currentTime = 0;
+            }
+        });
+    }
+
     function togglePlay() {
         if (tracks.length === 0) return;
         isPlaying = !isPlaying;
-        
+
         audioElements.forEach(audio => {
             if (audio) {
                 isPlaying ? audio.play() : audio.pause();
@@ -29,30 +42,34 @@
         });
     }
 
-    // Senkronizasyon ve Bitiş Kontrolü
+    function formatTime(seconds: number): string {
+        const m = Math.floor(seconds / 60);
+        const s = Math.floor(seconds % 60);
+        return `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    onMount(() => {
+        return () => {
+            // Cleanup on destroy — stop all audio
+            audioElements.forEach(a => {
+                if (a) {
+                    a.pause();
+                    a.src = '';
+                }
+            });
+        };
+    });
+
     $effect(() => {
         let interval: number;
         if (isPlaying) {
             interval = window.setInterval(() => {
-                // Referans olarak çalmaya hazır ilk elementi seç
                 const master = audioElements.find(a => a && a.readyState >= 2);
-                
                 if (master) {
                     currentTime = master.currentTime;
                     if (duration === 0) duration = master.duration;
-
-                    // --- KRİTİK HATA ÇÖZÜMÜ ---
                     if (master.ended) {
-                        isPlaying = false;
-                        currentTime = 0;
-                        
-                        // Sadece başa sarma, hepsini tek tek DURDUR (Explicit Pause)
-                        audioElements.forEach(a => {
-                            if (a) {
-                                a.pause();
-                                a.currentTime = 0;
-                            }
-                        });
+                        stopAll();
                     }
                 }
             }, 100);
@@ -61,60 +78,183 @@
     });
 </script>
 
-<div class="bg-[#0a0a0a] rounded-3xl border border-white/5 shadow-2xl overflow-hidden">
-    <div class="p-8 bg-gradient-to-b from-white/[0.03] to-transparent border-b border-white/5">
-        <div class="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-            
-            <button 
-                onclick={togglePlay}
-                class="w-20 h-20 flex-shrink-0 rounded-full bg-blue-600 hover:bg-blue-500 flex items-center justify-center transition-all shadow-xl shadow-blue-900/40 active:scale-95"
-            >
-                {#if isPlaying}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 fill-white" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                {:else}
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 fill-white translate-x-1" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                {/if}
-            </button>
+<div class="mixer">
+    <div class="transport">
+        <button onclick={togglePlay} class="play-btn">
+            {#if isPlaying}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+            {:else}
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            {/if}
+        </button>
 
-            <div class="flex flex-wrap items-center gap-4">
-                <div class="flex items-center gap-4 bg-black/40 px-5 py-2.5 rounded-2xl border border-white/5">
-                    <span class="text-[9px] font-black tracking-widest text-gray-500 uppercase">Pitch</span>
-                    <div class="flex items-center gap-2">
-                        <button onclick={() => projectController.setGlobalPitch(projectController.globalPitch - 1)} class="w-7 h-7 rounded-lg border border-white/10 hover:bg-white/5 text-white">-</button>
-                        <div class="w-10 text-center">
-                            <span class="text-lg font-black font-mono text-emerald-500">{projectController.globalPitch > 0 ? '+' : ''}{projectController.globalPitch}</span>
-                        </div>
-                        <button onclick={() => projectController.setGlobalPitch(projectController.globalPitch + 1)} class="w-7 h-7 rounded-lg border border-white/10 hover:bg-white/5 text-white">+</button>
-                    </div>
-                </div>
-            </div>
+        <div class="time-display">
+            <span class="time-current">{formatTime(currentTime)}</span>
+            <span class="time-sep">/</span>
+            <span class="time-total">{formatTime(duration || 0)}</span>
+        </div>
 
-            <div class="flex-1 w-full">
-                <div class="flex justify-between items-end mb-4">
-                    <div>
-                        <span class="text-xs font-black uppercase tracking-[0.2em] text-blue-500">Master Output</span>
-                        <h2 class="text-2xl font-bold text-white">Multitrack Mixer</h2>
-                    </div>
-                    <div class="text-right font-mono text-sm text-gray-400">
-                        <span class="text-blue-400">{Math.floor(currentTime)}s</span> / {Math.floor(duration || 0)}s
-                    </div>
-                </div>
-                <input 
-                    type="range" 
-                    min="0" 
-                    max={duration || 100} 
-                    step="0.1"
-                    value={currentTime} 
-                    oninput={handleSeek}
-                    class="w-full h-2 bg-white/5 rounded-full appearance-none cursor-pointer accent-blue-500"
-                />
-            </div>
+        <div class="pitch-control">
+            <span class="pitch-label">PITCH</span>
+            <button onclick={() => projectController.setGlobalPitch(projectController.globalPitch - 1)} class="pitch-btn">−</button>
+            <span class="pitch-value" class:positive={projectController.globalPitch > 0} class:negative={projectController.globalPitch < 0}>
+                {projectController.globalPitch > 0 ? '+' : ''}{projectController.globalPitch}
+            </span>
+            <button onclick={() => projectController.setGlobalPitch(projectController.globalPitch + 1)} class="pitch-btn">+</button>
+        </div>
+
+        <div class="seek-bar">
+            <input
+                type="range"
+                min="0"
+                max={duration || 100}
+                step="0.1"
+                value={currentTime}
+                oninput={handleSeek}
+                class="seek-input"
+            />
+            <div class="seek-progress" style="width: {duration ? (currentTime / duration) * 100 : 0}%"></div>
         </div>
     </div>
 
-    <div class="p-6 space-y-2">
+    <div class="tracks">
         {#each tracks as track, i (track.id)}
             <TrackRow bind:track={tracks[i]} bind:audioElement={audioElements[i]} />
         {/each}
     </div>
 </div>
+
+<style>
+    .mixer {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+    }
+
+    .transport {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+    }
+
+    .play-btn {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.15s;
+        flex-shrink: 0;
+    }
+
+    .play-btn:hover {
+        background: var(--accent-hover);
+        transform: scale(1.05);
+    }
+
+    .time-display {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--text-secondary);
+        flex-shrink: 0;
+    }
+
+    .time-current { color: var(--text-primary); }
+    .time-sep { color: var(--text-muted); margin: 0 2px; }
+    .time-total { color: var(--text-muted); }
+
+    .pitch-control {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg-primary);
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        flex-shrink: 0;
+    }
+
+    .pitch-label {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 0.1em;
+        margin-right: 4px;
+    }
+
+    .pitch-btn {
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-elevated);
+        color: var(--text-secondary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.1s;
+    }
+
+    .pitch-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+    }
+
+    .pitch-value {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 600;
+        width: 28px;
+        text-align: center;
+        color: var(--text-primary);
+    }
+
+    .pitch-value.positive { color: var(--accent); }
+    .pitch-value.negative { color: var(--danger); }
+
+    .seek-bar {
+        flex: 1;
+        min-width: 200px;
+        position: relative;
+        height: 4px;
+        background: var(--bg-primary);
+        border-radius: 2px;
+        align-self: center;
+    }
+
+    .seek-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: var(--accent);
+        border-radius: 2px;
+        pointer-events: none;
+    }
+
+    .seek-input {
+        position: absolute;
+        top: -8px;
+        left: 0;
+        width: 100%;
+        height: 20px;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .tracks {
+        padding: 8px;
+    }
+</style>

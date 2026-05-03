@@ -104,3 +104,42 @@ def test_process_audio_internal_error_handling(client, mock_service):
     
     assert response.status_code == 500
     assert "Demucs fail" in response.json()["detail"]
+
+
+def test_process_url_success_flow(client, mock_service):
+    """
+    Scenario: User submits a valid YouTube URL.
+    Expected: Service processes the URL and returns stems.
+    """
+    mock_service.process_url.return_value = {"vocals": b"data"}
+    mock_service.save_results.return_value = {
+        "job_id": "url-job-123",
+        "paths": ["/static/url-job-123/vocals.wav"]
+    }
+
+    response = client.post(
+        "/api/v1/processor/process-url",
+        json={"url": "https://youtube.com/watch?v=test"}
+    )
+
+    assert response.status_code == 200
+    data = response.json()
+    assert data["job_id"] == "url-job-123"
+    assert data["status"] == "completed"
+    mock_service.process_url.assert_called_once()
+
+
+def test_process_url_handles_download_failure(client, mock_service):
+    """
+    Scenario: Download fails for the given URL.
+    Expected: 500 error with descriptive message.
+    """
+    mock_service.process_url.side_effect = Exception("Download failed")
+
+    response = client.post(
+        "/api/v1/processor/process-url",
+        json={"url": "https://youtube.com/watch?v=invalid"}
+    )
+
+    assert response.status_code == 500
+    assert "Download failed" in response.json()["detail"]
