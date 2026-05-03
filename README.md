@@ -2,20 +2,16 @@
 
 ![SoundPilot](screenshot.png)
 
-Paste a YouTube link or upload an audio file — SoundPilot separates vocals, drums, bass, and other instruments into individual tracks. Mix them with real-time pitch shifting, mute, and volume controls.
-
-Built with Demucs (Meta AI), FastAPI, SvelteKit, and Tone.js.
+A lightweight tool for splitting songs into stems. Paste a YouTube link or drop an audio file — get isolated vocals, drums, bass, and instruments. Mix them however you want.
 
 ## Features
 
 - YouTube URL or file upload
 - AI stem separation (vocals, drums, bass, other)
-- Real-time multitrack mixer
-- Per-track mute and volume
-- Global pitch shifting
-- Song library with auto-save
+- Real-time mixer with mute, volume, and pitch shift
+- Auto-saved song library
 
-## Run with Docker
+## Run
 
 ```bash
 git clone https://github.com/OktayBalaban/SoundPilot.git
@@ -23,6 +19,10 @@ cd SoundPilot
 docker compose up --build
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000`. That's it.
 
-NVIDIA GPU is optional — speeds up Demucs significantly but not required.
+NVIDIA GPU speeds things up but isn't required.
+
+## Stack
+
+Demucs (Meta AI) · FastAPI · SvelteKit · Tone.js · Docker
