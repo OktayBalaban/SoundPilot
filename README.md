@@ -42,15 +42,7 @@ cd SoundPilot
 docker compose up --build
 ```
 
-Open `http://localhost:3000`.
-
-NVIDIA GPU speeds things up significantly but isn't required. For CPU-only:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.cpu.yml up --build
-```
-
-Processing will be slower (~3-5 min per song) but fully functional.
+Open `http://localhost:3000`. NVIDIA GPU speeds things up but isn't required.
 
 ## Stack
 
